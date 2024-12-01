@@ -1,0 +1,4 @@
+[submodule "inputs"]
+	path = inputs
+	url = https://github.com/julian-go/aoc2024_inputs.git
+	branch = main
