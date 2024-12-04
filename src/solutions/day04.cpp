@@ -1,3 +1,4 @@
+#include <array>
 #include <iostream>
 #include <sstream>
 
@@ -42,65 +43,33 @@ std::string Day04_1(std::ifstream& in) {
     }
   }
 
-  int matches{0};
-  // Check all Xs
-  for (auto const& X : Xs) {
-    if (word_search.contains(X.x, X.y - 3)) {
-      if (word_search.at(X.North()) == 'M' && word_search.at(X.North().North()) == 'A' &&
-          word_search.at(X.North().North().North()) == 'S') {
-        ++matches;
-      }
-    }
-    if (word_search.contains(X.x, X.y + 3)) {
-      if (word_search.at(X.South()) == 'M' && word_search.at(X.South().South()) == 'A' &&
-          word_search.at(X.South().South().South()) == 'S') {
-        ++matches;
-      }
-    }
-    if (word_search.contains(X.x - 3, X.y)) {
-      if (word_search.at(X.West()) == 'M' && word_search.at(X.West().West()) == 'A' &&
-          word_search.at(X.West().West().West()) == 'S') {
-        ++matches;
-      }
-    }
-    if (word_search.contains(X.x + 3, X.y)) {
-      if (word_search.at(X.East()) == 'M' && word_search.at(X.East().East()) == 'A' &&
-          word_search.at(X.East().East().East()) == 'S') {
-        ++matches;
-      }
-    }
+  constexpr std::string_view kMas = "MAS";
+  constexpr std::array<aoc::Vector2D<int>, 8> kDirections = {
+      aoc::Vector2D<int>{0, 1},   aoc::Vector2D<int>{-1, 1}, aoc::Vector2D<int>{-1, 0},
+      aoc::Vector2D<int>{-1, -1}, aoc::Vector2D<int>{0, -1}, aoc::Vector2D<int>{1, -1},
+      aoc::Vector2D<int>{1, 0},   aoc::Vector2D<int>{1, 1}};
+  int xmas_found{0};
 
-    // diagonal
-    if (word_search.contains(X.x - 3, X.y - 3)) {
-      if (word_search.at(X.North().West()) == 'M' &&
-          word_search.at(X.North().West().North().West()) == 'A' &&
-          word_search.at(X.North().West().North().West().North().West()) == 'S') {
-        ++matches;
+  // Check all Xs in all directions (cardinal and ordinal) to see if they spell XMAS
+  for (auto const& X : Xs) {
+    for (auto const& dir : kDirections) {
+      int i = 1;
+      bool found_xmas{true};
+      for (auto const& next_letter : kMas) {
+        auto next_letter_xy = X + dir * i;
+        if (!(word_search.contains(next_letter_xy) &&
+              word_search.at(next_letter_xy) == next_letter)) {
+          found_xmas = false;
+          break;
+        }
+        ++i;
       }
-    }
-    if (word_search.contains(X.x + 3, X.y - 3)) {
-      if (word_search.at(X.North().East()) == 'M' &&
-          word_search.at(X.North().East().North().East()) == 'A' &&
-          word_search.at(X.North().East().North().East().North().East()) == 'S') {
-        ++matches;
-      }
-    }
-    if (word_search.contains(X.x - 3, X.y + 3)) {
-      if (word_search.at(X.South().West()) == 'M' &&
-          word_search.at(X.South().West().South().West()) == 'A' &&
-          word_search.at(X.South().West().South().West().South().West()) == 'S') {
-        ++matches;
-      }
-    }
-    if (word_search.contains(X.x + 3, X.y + 3)) {
-      if (word_search.at(X.South().East()) == 'M' &&
-          word_search.at(X.South().East().South().East()) == 'A' &&
-          word_search.at(X.South().East().South().East().South().East()) == 'S') {
-        ++matches;
+      if (found_xmas) {
+        ++xmas_found;
       }
     }
   }
-  return std::to_string(matches);
+  return std::to_string(xmas_found);
 };
 
 std::string Day04_2(std::ifstream& in) {
