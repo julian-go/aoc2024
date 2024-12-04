@@ -46,3 +46,4 @@ set(SOLUTION_SRCS
 
 add_executable(AOC ${SOLUTION_SRCS} ${COMMON_SRCS})
 target_include_directories(AOC PRIVATE include/)
+target_include_directories(AOC PRIVATE include/common/)
