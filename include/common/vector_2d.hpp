@@ -16,8 +16,8 @@ struct Vector2D {
     }
   };
 
-  constexpr Vector2D() : x(0), y(0){};
-  constexpr Vector2D(T x, T y) : x(x), y(y){};
+  constexpr Vector2D() : x(0), y(0) {};
+  constexpr Vector2D(T x, T y) : x(x), y(y) {};
   constexpr virtual ~Vector2D() = default;
 
   T length() const { return std::abs(x) + std::abs(y); }
@@ -55,6 +55,12 @@ struct Vector2D {
   }
 
   Vector2D operator-(const Vector2D& r) const { return Vector2D(x - r.x, y - r.y); }
+
+  Vector2D& operator-=(const Vector2D& r) {
+    x -= r.x;
+    y -= r.y;
+    return *this;
+  }
 
   inline bool operator==(const Vector2D& r) const { return x == r.x && y == r.y; }
 
