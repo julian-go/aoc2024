@@ -56,26 +56,23 @@ std::string Day10_1(std::ifstream& in) {
     last_positions = positions;
   }
 
+  // Remove all duplicates, since only the reachable positions count, not how you get there
   std::sort(last_positions.begin(), last_positions.end());
   auto last = std::unique(last_positions.begin(), last_positions.end());
   last_positions.erase(last, last_positions.end());
+
   return std::to_string(std::ssize(last_positions));
 };
 
 std::string Day10_2(std::ifstream& in) {
-  auto [map, start_positions] = ParseInput(in);
-
-  std::vector<std::pair<Coordinate, Coordinate>> last_positions;
-  for (const auto& p : start_positions) {
-    last_positions.emplace_back(p, p);
-  }
+  auto [map, last_positions] = ParseInput(in);
 
   for (int i = 1; i <= 9; ++i) {
-    std::vector<std::pair<Coordinate, Coordinate>> positions{};
+    std::vector<Coordinate> positions{};
     for (auto& p : last_positions) {
-      for (auto& n : p.first.Neighbors()) {
+      for (auto& n : p.Neighbors()) {
         if (map.contains(n) && map.at(n) == i) {
-          positions.emplace_back(n, p.second);
+          positions.emplace_back(n);
         }
       }
     }
