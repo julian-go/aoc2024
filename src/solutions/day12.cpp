@@ -8,6 +8,7 @@
 #include "solutions.hpp"
 
 namespace {
+
 using Vector = aoc::Vector2D<int>;
 using Cache = std::unordered_set<Vector, Vector::Hash>;
 using Map = aoc::Matrix2D<char>;
@@ -28,15 +29,53 @@ auto ParseInput(std::ifstream& in) {
   return map;
 }
 
-int Area(Cache& c, const Map& map, Vector position) {
+int Part1(Cache& c, const Map& map, Vector position) {
+  if (c.contains(position)) {
+    return 0;
+  }
+
+  int area = 1;  // start at one to include initial element
+  int perimeter = 0;
   const auto id = map.at(position);
   std::queue<Vector> to_check;
   to_check.push(position);
   c.insert(position);
-  int area = 1;
+
   while (!to_check.empty()) {
     auto current = to_check.front();
     to_check.pop();
+
+    for (auto n : current.Neighbors()) {
+      if (!c.contains(n) && map.contains(n) && map.at(n) == id) {
+        to_check.push(n);
+        c.insert(n);
+        area++;
+      } else if (!map.contains(n) || map.at(n) != id) {
+        perimeter++;
+      }
+    }
+  }
+  return area * perimeter;
+}
+
+int Part2(Cache& c, const Map& map, Vector position) {
+  if (c.contains(position)) {
+    return 0;
+  }
+
+  int area = 1;  // start at one to include initial element
+  int corners = 0;
+  const auto id = map.at(position);
+  const auto can_walk = [&map, id](Vector v) { return map.contains(v) && map.at(v) == id; };
+
+  std::queue<Vector> to_check;
+  to_check.push(position);
+  c.insert(position);
+
+  while (!to_check.empty()) {
+    auto current = to_check.front();
+    to_check.pop();
+
     for (auto n : current.Neighbors()) {
       if (!c.contains(n) && map.contains(n) && map.at(n) == id) {
         to_check.push(n);
@@ -44,47 +83,40 @@ int Area(Cache& c, const Map& map, Vector position) {
         area++;
       }
     }
-  }
-  std::cout << area << std::endl;
 
-  return area;
-}
-
-int Perimeter(const Map& map, Vector position) {
-  auto start = position;
-  const auto id = map.at(position);
-  int perimeter = 0;
-  Vector previous_direction = Vector(0, 1);
-  auto initial_direction = previous_direction;
-  do {
-    Vector direction;
-    for (auto n : position.Neighbors()) {
-      if (map.contains(n) && map.at(n) == id) {
-        direction = n - position;
+    // In part 2 we use the flood fill to identify all corner blocks, since the number of vertices
+    // equals the number of sides
+    {
+      auto wall_1 = Vector(-1, 0);
+      auto wall_2 = Vector(0, -1);
+      for (int i = 0; i < 4; ++i) {
+        if (!can_walk(current + wall_1) && !can_walk(current + wall_2)) {
+          corners++;
+        }
+        wall_1.RotateRight();
+        wall_2.RotateRight();
       }
     }
-    perimeter++;
-    if (previous_direction.x != direction.x) {
-      perimeter++;
+
+    {
+      auto free_1 = Vector(-1, 0);
+      auto free_2 = Vector(0, -1);
+      auto wall_1 = Vector(-1, -1);
+      for (int i = 0; i < 4; ++i) {
+        if (can_walk(current + free_1) && can_walk(current + free_2) &&
+            !can_walk(current + wall_1)) {
+          corners++;
+        }
+        free_1.RotateRight();
+        free_2.RotateRight();
+        wall_1.RotateRight();
+      }
     }
-    if (previous_direction.y != direction.y) {
-      perimeter++;
-    }
-    direction = direction;
-  } while (position != start);
-  if (previous_direction.y != initial_direction.y) {
-    perimeter++;
   }
-  return perimeter;
+  int sides = corners;
+  return area * sides;
 }
 
-int Visit(Cache& c, const Map& map, Vector position) {
-  if (c.contains(position)) {
-    return 0;
-  } else {
-    return Area(c, map, position) * Perimeter(map, position);
-  }
-}
 }  // namespace
 
 std::string Day12_1(std::ifstream& in) {
@@ -93,10 +125,22 @@ std::string Day12_1(std::ifstream& in) {
   Cache c;
   for (int y = 0; y < map.sizeY(); ++y) {
     for (int x = 0; x < map.sizeX(); ++x) {
-      value += Visit(c, map, {x, y});
+      value += Part1(c, map, {x, y});
     }
   }
-  return "";
+  return std::to_string(value);
 };
 
-std::string Day12_2(std::ifstream& in) { return ""; };
+std::string Day12_2(std::ifstream& in) {
+  auto map = ParseInput(in);
+  int value = 0;
+  Cache c;
+  for (int y = 0; y < map.sizeY(); ++y) {
+    for (int x = 0; x < map.sizeX(); ++x) {
+      if (!c.contains({x, y})) {
+        value += Part2(c, map, {x, y});
+      }
+    }
+  }
+  return std::to_string(value);
+};

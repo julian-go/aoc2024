@@ -37,6 +37,7 @@ struct Vector2D {
 
   Vector2D Right() { return {-y, x}; }
   Vector2D Left() { return {y, -x}; }
+  Vector2D Reverse() { return {-x, -y}; }
 
   auto Neighbors() const -> std::array<Vector2D, 4> { return {North(), South(), East(), West()}; }
   Vector2D North() const { return *this + Vector2D(0, -1); }
